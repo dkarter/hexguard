@@ -2,20 +2,20 @@ name: Daily Hexguard Run
 
 on:
   schedule:
-    - cron: "23 6 * * *"
+    - cron: '23 6 * * *'
   workflow_dispatch:
     inputs:
       dep:
-        description: "Dependency name (leave empty for --random)"
+        description: 'Dependency name (leave empty for --random)'
         required: false
         type: string
       dry_run:
-        description: "Run with --dry-run"
+        description: 'Run with --dry-run'
         required: false
         default: false
         type: boolean
       block_breaking_changes:
-        description: "Also block on compatibility/breaking changes"
+        description: 'Also block on compatibility/breaking changes'
         required: false
         default: false
         type: boolean

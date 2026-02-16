@@ -1,0 +1,44 @@
+name: Release Docs
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MIX_ENV: dev
+      HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup toolchain with mise
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
+        with:
+          tool_versions: |
+            erlang 28.3
+            elixir 1.19.4-otp-28
+          install: true
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Generate docs
+        run: mix docs
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: hexguard-docs
+          path: doc/
+
+      - name: Publish docs to HexDocs
+        if: ${{ env.HEX_API_KEY != '' }}
+        run: mix hex.publish docs --yes

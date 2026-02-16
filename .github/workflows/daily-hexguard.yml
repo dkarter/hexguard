@@ -1,0 +1,89 @@
+name: Daily Hexguard Run
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+    inputs:
+      dep:
+        description: "Dependency name (leave empty for --random)"
+        required: false
+        type: string
+      dry_run:
+        description: "Run with --dry-run"
+        required: false
+        default: false
+        type: boolean
+      block_breaking_changes:
+        description: "Also block on compatibility/breaking changes"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: hexguard-daily
+  cancel-in-progress: false
+
+jobs:
+  hexguard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      MIX_ENV: dev
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      INPUT_DEP: ${{ github.event.inputs.dep || '' }}
+      INPUT_DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+      INPUT_BLOCK_BREAKING: ${{ github.event.inputs.block_breaking_changes || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup toolchain with mise
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
+        with:
+          tool_versions: |
+            erlang 28.3
+            elixir 1.19.4-otp-28
+          install: true
+
+      - name: Pull restricted opencode image
+        run: docker pull ghcr.io/anomalyco/opencode
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Hexguard
+        shell: bash
+        run: |
+          cmd=(mix hexguard)
+
+          if [[ -n "${INPUT_DEP}" ]]; then
+            cmd+=("${INPUT_DEP}")
+          else
+            cmd+=(--random)
+          fi
+
+          if [[ "${INPUT_DRY_RUN}" == "true" ]]; then
+            cmd+=(--dry-run)
+          fi
+
+          if [[ "${INPUT_BLOCK_BREAKING}" == "true" ]]; then
+            cmd+=(--block-breaking-changes)
+          fi
+
+          echo "Running: ${cmd[*]}"
+          "${cmd[@]}"

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "elixir",
+  "packages": {
+    ".": {
+      "package-name": "hexguard",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 [tools]
 dprint = "latest"
-elixir = "1.19.5-otp-28"
+elixir = "1.19.5"
 erlang = "28"
 "github:crate-ci/committed" = "latest"
 gitleaks = "latest"

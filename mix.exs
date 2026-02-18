@@ -30,7 +30,7 @@ defmodule Hexguard.MixProject do
       {:credo, "~> 1.0"},
       {:zoi, "~> 0.17"},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false},
-      {:mimic, "~> 1.11", only: :test},
+      {:mimic, "~> 2.0", only: :test},
       {:igniter, "~> 0.7"}
     ]
   end
